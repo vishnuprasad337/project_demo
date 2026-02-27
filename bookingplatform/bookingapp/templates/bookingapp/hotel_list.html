@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel List</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 30px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        th {
+            background-color: #1e3c72;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #1e3c72;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #16325c;
+        }
+    </style>
+</head>
+<body>
+
+<h2 style="text-align:center;">🏨 All Hotels</h2>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>City</th>
+        <th>Hotel Type</th>
+        <th>Rooms</th>
+    </tr>
+
+    {% for hotel in hotels %}
+    <tr>
+        <td>{{ hotel.id }}</td>
+        <td>{{ hotel.name }}</td>
+        <td>{{ hotel.city }}</td>
+        <td>{{ hotel.hotel_type }}</td>
+        <td>
+            <a href="{% url 'hotel_rooms' hotel.id %}">
+                <button>View Rooms</button>
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No Hotels Found</td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+<div style="text-align:center;">
+    <a href="{% url 'hotel' %}">⬅ Back</a>
+</div>
+
+</body>
+</html>

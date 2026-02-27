@@ -1,0 +1,43 @@
+<div class="container" style="padding: 20px; font-family: sans-serif;">
+    <h2>📖 Bookings for {{ hotel.name }}</h2>
+    
+    <table border="1" cellpadding="10" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead style="background-color: #1e3c72; color: white;">
+            <tr>
+                <th>ID</th>
+                <th>Guest Name</th>
+                <th>Email</th>
+                <th>Count</th>
+                <th>Room Type</th>
+                <th>Check In</th>
+                <th>Check Out</th>th
+                <th>Balance Room</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td><strong>{{ booking.name }}</strong></td>
+                <td>{{ booking.email }}</td>
+                <td>{{ booking.count }}</td>
+                <td>{{ booking.room_type }}</td>
+                <td>{{ booking.check_in|date:"M d, Y" }}</td>
+                <td>{{ booking.check_out|date:"M d, Y" }}</td>
+                <td>{{ booking.balance_rooms }}</td>
+                <td>${{ booking.total_amount }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center;">No bookings found for this hotel.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="{% url 'hotel_dashboard' %}" style="text-decoration: none; color: #1e3c72;">
+        ⬅ Back to Dashboard
+    </a>
+</div>

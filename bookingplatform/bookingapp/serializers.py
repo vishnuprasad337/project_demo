@@ -5,7 +5,11 @@ from django.db.models import Sum
 class UserSerializers(serializers.ModelSerializer):
     class Meta:
         model =User
-        fields='__all__'
+        model = User
+        fields = ['id', 'user_name', 'Address', 'email', 'phonenumber', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True} 
+        }
 class HotelSerializers(serializers.ModelSerializer):
     class Meta:
         model =Hotel
@@ -17,7 +21,7 @@ class HotelSerializers(serializers.ModelSerializer):
 class RoomSerializers(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields=  fields = ['id','room_type', 'price', 'available_rooms']
+        fields=  fields = ['id','room_type', 'price', 'available_rooms','total_rooms']
        ## read_only_fields=['hotel']
 
 

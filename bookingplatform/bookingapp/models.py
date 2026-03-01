@@ -15,6 +15,7 @@ class User(models.Model):
     email = models.CharField(max_length=100,unique=True)
     phonenumber=models.IntegerField(validators=[phone_validator])
     created_at =models.DateTimeField(auto_now_add=True)
+    password=models.CharField(max_length=128,default=0)
 
     def __str__(self):
         return f"{self.name}  {self.email}"
@@ -62,7 +63,7 @@ class Hotelbooking(models.Model):
         ('5 star', '5 star'),
         ('delux', 'delux'),
     )
-
+    
     hotel=models.ForeignKey(Hotel,on_delete=models.CASCADE,default=1)
     rooms=models.ForeignKey(Room,on_delete=models.CASCADE,default=1)
     room_type=models.CharField(max_length=100, choices=ROOM_CHOICES , default='Normal')

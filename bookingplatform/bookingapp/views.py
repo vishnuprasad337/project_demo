@@ -5,6 +5,8 @@ from .models import User,Hotel,Hotelbooking,Room
 from django.db.models import Sum
 from .serializers import UserSerializers,HotelSerializers,BookingSerializers,RoomSerializers
 from django.shortcuts import render,get_object_or_404,redirect
+from django.contrib import messages
+from datetime import datetime
 
 class UserListCreateAPIView(APIView):
     def get(self,request):
@@ -227,7 +229,7 @@ def hotel_login_view(request):
 
     return render(request, 'bookingapp/hotel_login.html')
   
-from django.shortcuts import get_object_or_404
+
 
 def hotel_dashboard(request):
     hotel_id = request.session.get('hotel_id')
@@ -264,3 +266,96 @@ def hotel_bookings_dashboard(request):
     return render(request, 'bookingapp/hotel_bookings_dashboard.html', {
         'bookings': bookings
     })
+def room_adding_view(request,pk):
+    hotel=get_object_or_404(Hotel,pk=pk)
+    if request.method=='POST':
+        rtype=request.POST.get('room_type')
+        count=int(request.POST.get('count',1))
+        room=Room.objects.filter(hotel=hotel,room_type=rtype).first()
+        if room:
+            room.available_rooms += count
+           
+            room.save()
+        return redirect('hotel_room_dashboard',pk=pk)
+    rooms = hotel.rooms.all()
+    return render(request, 'bookingapp/hotel_rooms_dashboard.html', {
+        'hotel': hotel, 
+        'rooms': rooms
+    })
+    
+
+
+def user_login(request):
+    if request.method == "POST":
+        email_input = request.POST.get('email')
+        password_input = request.POST.get('password')
+
+        try:
+           
+            user = User.objects.get(email=email_input, password=password_input)
+            
+           
+            return render(request, 'user_details.html', {'user': user})
+            
+        except User.DoesNotExist:
+           
+            return render(request, 'user.html', {'error': 'Invalid Email or Password'})
+
+    return render(request, 'user.html')
+def hotel_details_view(request, pk):
+    hotel = get_object_or_404(Hotel, pk=pk)
+
+    return render(request, 'bookingapp/hotel_details.html', {'hotel': hotel})
+
+
+def process_booking(request, pk):
+    room = get_object_or_404(Room, id=pk)
+
+    if request.method == 'POST':
+      
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        count = int(request.POST.get('count'))
+        check_in_str = request.POST.get('check_in')
+        check_out_str = request.POST.get('check_out')
+
+      
+        check_in = datetime.strptime(check_in_str, '%Y-%m-%d').date()
+        check_out = datetime.strptime(check_out_str, '%Y-%m-%d').date()
+        
+        duration = (check_out - check_in).days
+        days = max(duration, 1)
+
+        
+        if duration <= 0:
+            messages.error(request, "Check-out must be after check-in.")
+            return render(request, 'bookingapp/booking.html', {'room': room})
+
+        if room.available_rooms < count:
+            messages.error(request, f"Only {room.available_rooms} rooms available.")
+            return render(request, 'bookingapp/booking.html', {'room': room})
+
+        total_amount = days * float(room.price) * count
+        
+       
+        room.available_rooms -= count
+        room.save()
+
+        
+        Hotelbooking.objects.create(
+            hotel=room.hotel,
+            rooms=room,
+            room_type=room.room_type,
+            name=name,
+            email=email,
+            count=count,
+            check_in=check_in,
+            check_out=check_out,
+            total_amount=total_amount,
+            balance_rooms=room.available_rooms
+        )
+
+        messages.success(request, f"Booking successful! Total: ₹{total_amount}")
+        return redirect('hotel_dashboard')
+
+    return render(request, 'bookingapp/booking.html', {'room': room})

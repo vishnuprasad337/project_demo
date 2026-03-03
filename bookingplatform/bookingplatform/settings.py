@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+ALLOWED_HOSTS = ['*']
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -127,4 +127,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
 MY_API_KEY = "9f8a7c6b5d4e3f2a1b0c"

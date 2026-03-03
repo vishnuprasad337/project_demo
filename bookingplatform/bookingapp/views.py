@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import User,Hotel,Hotelbooking,Room
 from django.db.models import Sum
-from .serializers import UserSerializers,HotelSerializers,BookingSerializers,RoomSerializers
+from .serializers import UserSerializers,HotelSerializers,BookingSerializers,RoomSerializers,HotelDetailsSerializers
 from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib import messages
 from datetime import datetime
+from django.conf import settings
 
 class UserListCreateAPIView(APIView):
     def get(self,request):
@@ -116,6 +117,7 @@ class RoomsAddAPIView(APIView):
                     existing_room.price = price
 
                 existing_room.save()
+
             
             else:
             
@@ -189,6 +191,28 @@ class BookingListhotelAPI(APIView):
         bookings = Hotelbooking.objects.filter(hotel_id=hotel_id)
         serializer = BookingSerializers(bookings, many=True)
         return Response(serializer.data)
+    
+
+class HotelFullAPIView(APIView):
+    def get(self, request, pk):
+        try:
+            
+            hotel = Hotel.objects.prefetch_related('rooms', 'hotelbooking_set').get(id=pk)
+            serializer = HotelDetailsSerializers(hotel)
+            return Response(serializer.data)
+        except Hotel.DoesNotExist:
+            return Response({"error": "Hotel not found"}, status=404)
+class BookingAppFullAPIView(APIView):
+    def get(self, request):
+        api_key = request.headers.get('API-KEY')
+
+        if api_key != settings.MY_API_KEY:
+            return Response({"error": "Invalid API Key"}, status=403)
+
+        hotels = Hotel.objects.prefetch_related('rooms', 'hotelbooking_set')
+        serializer = HotelDetailsSerializers(hotels, many=True)
+        return Response(serializer.data)
+
 
 def index(request):
     return render(request, 'bookingapp/index.html')
@@ -285,23 +309,43 @@ def room_adding_view(request,pk):
     
 
 
+
 def user_login(request):
+
     if request.method == "POST":
-        email_input = request.POST.get('email')
-        password_input = request.POST.get('password')
+        email_input = request.POST.get('email').strip()
+        password_input = request.POST.get('password').strip()
 
         try:
-           
-            user = User.objects.get(email=email_input, password=password_input)
-            
-           
-            return render(request, 'user_details.html', {'user': user})
-            
-        except User.DoesNotExist:
-           
-            return render(request, 'user.html', {'error': 'Invalid Email or Password'})
+            user = User.objects.get(
+                email=email_input,
+                password=password_input
+            )
 
-    return render(request, 'user.html')
+            request.session['user_id'] = user.id
+            return redirect('user_details')
+
+        except User.DoesNotExist:
+            return render(
+                request,
+                'bookingapp/user.html',
+                {'error': 'Invalid Email or Password'}
+            )
+
+    return render(request, 'bookingapp/user.html')
+def user_details(request):
+    user_id = request.session.get('user_id')
+
+    if not user_id:
+        return redirect('user_login')
+
+    user = User.objects.get(id=user_id)   
+
+    return render(
+        request,
+        'bookingapp/user_details.html',
+        {'user': user}
+    )
 def hotel_details_view(request, pk):
     hotel = get_object_or_404(Hotel, pk=pk)
 
@@ -322,6 +366,10 @@ def process_booking(request, pk):
       
         check_in = datetime.strptime(check_in_str, '%Y-%m-%d').date()
         check_out = datetime.strptime(check_out_str, '%Y-%m-%d').date()
+        if check_out<check_in:
+            messages.error(request,"check_out day should be after check_in")
+            return render(request, 'bookingapp/booking.html', {'room': room})
+
         
         duration = (check_out - check_in).days
         days = max(duration, 1)
@@ -334,15 +382,22 @@ def process_booking(request, pk):
         if room.available_rooms < count:
             messages.error(request, f"Only {room.available_rooms} rooms available.")
             return render(request, 'bookingapp/booking.html', {'room': room})
-
+       
         total_amount = days * float(room.price) * count
         
        
         room.available_rooms -= count
+    
         room.save()
-
+        current_balace=room.available_rooms
+        try:
+            user_instance = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "Please register/signup before booking.")
+            return render(request, 'bookingapp/booking.html', {'room': room})
         
         Hotelbooking.objects.create(
+            user=user_instance,
             hotel=room.hotel,
             rooms=room,
             room_type=room.room_type,
@@ -352,10 +407,43 @@ def process_booking(request, pk):
             check_in=check_in,
             check_out=check_out,
             total_amount=total_amount,
-            balance_rooms=room.available_rooms
+            balance_rooms=current_balace
         )
+        
 
         messages.success(request, f"Booking successful! Total: ₹{total_amount}")
         return redirect('hotel_dashboard')
 
     return render(request, 'bookingapp/booking.html', {'room': room})
+
+def signup(request):
+    if request.method == "POST":
+       
+        user_name = request.POST.get("user_name")
+        email = request.POST.get("email")
+        address = request.POST.get("address")
+        phonenumber = request.POST.get("phonenumber")
+        password = request.POST.get("password")
+
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "This email is already registered!")
+            return render(request, "bookingapp/signup.html")
+        try:
+            User.objects.create(
+                user_name=user_name,
+                email=email,
+                Address=address, 
+                phonenumber=phonenumber,
+                password=password
+            )
+            
+            messages.success(request, "Account created! You can now log in.")
+            return redirect("hotel_list")  
+
+        except Exception as e:
+            messages.error(request, f"An error occurred: {e}")
+            return render(request, "bookingapp/signup.html")
+
+    
+    return render(request, "bookingapp/signup.html")

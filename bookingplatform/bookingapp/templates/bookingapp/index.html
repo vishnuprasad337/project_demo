@@ -3,42 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking Platform</title>
+
     <style>
-        body {
+        /* Reset and Base Styles */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #e6eaef);
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            display: flex;
+            justify-content: center; /* Centered since there are no right-side links */
+            align-items: center;
+            padding: 20px 60px;
+            color: white;
+        }
+
+        /* If you want to keep the logo on the left, use justify-content: space-between above */
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
         }
 
-        .container {
+        .card {
             background: white;
             padding: 40px;
+            width: 420px;
             border-radius: 15px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-            width: 400px;
             text-align: center;
         }
 
-        h1 {
+        .card h1 {
             margin-bottom: 30px;
-            color: #333;
+            color: #1e3c72;
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        li {
-            margin: 15px 0;
-        }
-
-        a {
+        .card a {
             display: block;
+            margin: 15px 0;
             padding: 12px;
             border-radius: 8px;
             text-decoration: none;
@@ -48,31 +69,41 @@
             transition: 0.3s ease;
         }
 
-        a:hover {
+        .card a:hover {
             background: #1e3c72;
             color: white;
             transform: scale(1.05);
         }
 
+        /* ===== FOOTER ===== */
         .footer {
-            margin-top: 25px;
+            text-align: center;
+            padding: 15px;
             font-size: 12px;
-            color: gray;
+            color: white;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>🏨 Booking Platform</h1>
-        <ul>
-            <li><a href="{% url 'user' %}">👤 Manage Users</a></li>
-           <a href="{% url 'hotel' %}">Manage Hotel</a></li>
-           
-            <li><a href="{}">📅 Manage Bookings</a></li>
-        </ul>
-        <div class="footer">
-            © 2026 Booking System | Developed by You 🚀
+
+    <div class="navbar">
+        <div class="logo">🏨 Booking Platform</div>
+    </div>
+
+    <div class="hero">
+        <div class="card">
+            <h1>Welcome to Booking System</h1>
+
+            <a href="{% url 'user' %}">👤 User Login</a>
+            <a href="{% url 'hotel' %}">🏨 Manage Hotels</a>
+            <a href="{% url 'signup' %}">📅 Sign Up</a>
         </div>
     </div>
+
+    <div class="footer">
+        © 2026 Booking System | Developed by You 🚀
+    </div>
+
 </body>
 </html>

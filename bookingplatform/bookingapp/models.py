@@ -13,12 +13,12 @@ class User(models.Model):
     user_name=  models.CharField(max_length=100)
     Address= models.CharField(max_length=100)
     email = models.CharField(max_length=100,unique=True)
-    phonenumber=models.IntegerField(validators=[phone_validator])
+    phonenumber=models.CharField(validators=[phone_validator])
     created_at =models.DateTimeField(auto_now_add=True)
-    password=models.CharField(max_length=128,default=0)
+    password=models.CharField(max_length=128)
 
     def __str__(self):
-        return f"{self.name}  {self.email}"
+        return f"{self.user_name}  {self.email}"
     
     
 
@@ -53,7 +53,11 @@ class Room(models.Model):
      def __str__(self):
          return f"{self.hotel.name} - {self.room_type}"
     
-    
+class RoomNumber(models.Model):
+    room_category=models.ForeignKey(Room,on_delete=models.CASCADE)
+    room_number=models.CharField(max_length=10,unique=True) 
+    def __str__(self):
+        return f"{self.room_number} - {self.room_category.room_type}"  
  
 
 class Hotelbooking(models.Model):
@@ -63,12 +67,13 @@ class Hotelbooking(models.Model):
         ('5 star', '5 star'),
         ('delux', 'delux'),
     )
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     hotel=models.ForeignKey(Hotel,on_delete=models.CASCADE,default=1)
     rooms=models.ForeignKey(Room,on_delete=models.CASCADE,default=1)
+    assigned_room = models.ForeignKey(RoomNumber, on_delete=models.SET_NULL, null=True)
     room_type=models.CharField(max_length=100, choices=ROOM_CHOICES , default='Normal')
     name =models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     count = models.IntegerField()
     check_in = models.DateField()
     check_out = models.DateField()

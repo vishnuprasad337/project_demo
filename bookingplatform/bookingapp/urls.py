@@ -3,7 +3,10 @@ from .views import *
 urlpatterns=[
 
     path('', index, name='home'),
-    path('user/login', user_login, name='user_login'),
+    path('user/login/', user_login, name='user_login'),
+    path('user/details/', user_details, name='user_details'),
+    path('user/signup/', signup, name='signup'),
+    
     path('user', user, name='user'),
     path('hotel/', hotel, name='hotel'),
     path('hotel/login/', hotel_login_view, name='hotel_login'),
@@ -32,6 +35,9 @@ urlpatterns=[
     path('api/hotels/booking/', BookingregisterAPIView.as_view()),
     path('api/hotels/booking/<int:pk>/', BookingListAPIView .as_view()),
     path('api/hotels/<int:hotel_id>/bookings/', BookingListhotelAPI.as_view()),
+    path('hotel/<int:pk>/all/', HotelFullAPIView.as_view()),
+    path('bookingapp/api/', BookingAppFullAPIView.as_view()),
+
     
 ]
 

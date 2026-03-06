@@ -141,6 +141,7 @@ class BookingregisterAPIView(APIView):
             count=serializers.validated_data['count']
             starting_date=serializers.validated_data['check_in']
             ending_date=serializers.validated_data['check_out']
+            
             duration = (ending_date - starting_date).days
             days = max(duration, 1)
 
@@ -148,7 +149,7 @@ class BookingregisterAPIView(APIView):
             if duration<=0:
                 return Response ( {"error: check_out must be after check_in" },status=400)
 
-           
+            
             if room.available_rooms < count:
                  return Response(
                 {"error": f"Only {room.available_rooms} rooms available"},status=status.HTTP_400_BAD_REQUEST)
